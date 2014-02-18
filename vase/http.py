@@ -35,7 +35,7 @@ class HttpRequest(http.client.HTTPMessage):
     @body.setter
     def body(self, value):
         self._body = LimitedReader(value, self._content_length)
-    
+
 
     def as_string(self):  # pragma: no cover
         return "{} {} {}\r\n{}".format(self.method,
@@ -57,7 +57,7 @@ class HttpWriter(StreamWriter):
         self._headers_sent = False
         self._headers = []
         self._status = b''
-    
+
     def write_status(self, status, version=b'1.1'):
         assert not self._headers_sent, "Headers have already been sent"
         self._status = b'HTTP/' + version + b' ' + status + self.delimiter
@@ -75,6 +75,10 @@ class HttpWriter(StreamWriter):
             _to_send = self._status
             have_headers = False
             for name, value in self._headers:
+                if isinstance(name, str):
+                    name = name.encode('utf-8')
+                if isinstance(value, str):
+                    value = value.encode('utf-8')
                 _to_send += name + b': ' + value + self.delimiter
                 have_headers = True
             _to_send += self.delimiter
@@ -144,7 +148,7 @@ class HttpParser:
 
         request.body = reader
         return request
-    
+
 
 class WsgiParser:
     @staticmethod
